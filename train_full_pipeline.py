@@ -4,12 +4,14 @@ from argparse import ArgumentParser
 
 
 if __name__ == "__main__":
-    
-    frames_dict = {"longdress": list(range(1051, 1081)), 
-                   "soldier": list(range(536, 566)),
-                   "loot": list(range(1000, 1030)), 
-                   "redandblack": list(range(1450, 1480)), 
-                   }
+
+    frames_dict = {
+        "longdress": list(range(1051, 1053)),
+        # "longdress": list(range(1051, 1081)),
+        "soldier": list(range(536, 566)),
+        "loot": list(range(1000, 1030)),
+        "redandblack": list(range(1450, 1480)),
+    }
 
     # Set up command line argument parser
     parser = ArgumentParser(description="Training script parameters")
