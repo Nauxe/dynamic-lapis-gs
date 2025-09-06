@@ -49,18 +49,20 @@ if __name__ == "__main__":
 
         # 1. train the first frame from scratch
         for idx, resolution in enumerate(resolution_scales):
-            print(f"Training model for {scene} frame {first_frame:04} at resolution {resolution}")
+            if not (os.path.isfile(f"{model_base}/{dataset_name}/{scene}/{method}/{scene}_res{resolution}/{first_frame:04}/point_cloud/iteration_30000/point_cloud.ply")): # TEMPORARY, skip the training if the model already exists
 
-            model_dir = os.path.join(model_base, dataset_name, scene, method, f"{scene}_res{resolution}", f"{first_frame:04}")
-            os.makedirs(model_dir, exist_ok=True) # mkdir model_dir if not exists
-            source_dir = os.path.join(dataset_base, dataset_name, scene, f"{scene}_res{resolution}", f"{first_frame:04}")
+                print(f"Training model for {scene} frame {first_frame:04} at resolution {resolution}")
 
-            if resolution == 8: # train from scratch for the first resolution
-                train_command = f"python {train_bin} -s {source_dir} -m {model_dir} --data_device cuda --lambda_dssim {lambda_dssim} --iterations {iterations}"
-            else: # for other resolutions, use the previous resolution's model as foundation GS
-                train_command = f"python {train_bin} -s {source_dir} -m {model_dir} --data_device cuda --lambda_dssim {lambda_dssim}  --iterations {iterations} --dynamic_opacity --foundation_gs_path {model_base}/{dataset_name}/{scene}/{method}/{scene}_res{resolution_scales[idx-1]}/point_cloud/iteration_30000/point_cloud.ply"
+                model_dir = os.path.join(model_base, dataset_name, scene, method, f"{scene}_res{resolution}", f"{first_frame:04}")
+                os.makedirs(model_dir, exist_ok=True) # mkdir model_dir if not exists
+                source_dir = os.path.join(dataset_base, dataset_name, scene, f"{scene}_res{resolution}", f"{first_frame:04}")
 
-            os.system(train_command) # run the command lines
+                if resolution == 8: # train from scratch for the first resolution
+                    train_command = f"python {train_bin} -s {source_dir} -m {model_dir} --data_device cuda --lambda_dssim {lambda_dssim} --iterations {iterations}"
+                else: # for other resolutions, use the previous resolution's model as foundation GS
+                    train_command = f"python {train_bin} -s {source_dir} -m {model_dir} --data_device cuda --lambda_dssim {lambda_dssim}  --iterations {iterations} --dynamic_opacity --foundation_gs_path {model_base}/{dataset_name}/{scene}/{method}/{scene}_res{resolution_scales[idx-1]}/{first_frame:04}/point_cloud/iteration_30000/point_cloud.ply"
+
+                os.system(train_command) # run the command lines
 
 
         # 2. train the subsequent frames based on the previous frame, no densification, only update the position and rotation
