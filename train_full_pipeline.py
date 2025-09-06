@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset_base', type=str, required=True, help="Path to the dataset root directory")
     parser.add_argument('--dataset_name', type=str, required=True, help="Name of the dataset")
     parser.add_argument('--scene', type=str, required=True, help="Name of the scene")
-    parser.add_argument('--method', type=str, required=True, help="Name of the method", choices=["lapis", "freeze", "dynamic-lapis"])
+    parser.add_argument('--method', type=str, required=True, help="Name of the method", choices=["dynamic-lapis"])
     parser.add_argument('--lambda_dssim', type=float, default=0.8, help="Lambda for DSSIM loss")
     parser.add_argument('--iterations', type=int, default=30_000, help="Number of training iterations for each resolution")
     parser.add_argument('--frame_list', nargs='+', required=True, help='List of frame numbers to process, pass the start and end frame, e.g., --frame_list 1051 1080')
