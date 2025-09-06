@@ -60,6 +60,7 @@ class GaussianModel:
         self.size_fixedGS = None
         self.trainable_attributes = None # List. This variable is set to control what attribute we want to update. ["opacity"] in LapisGS;
         self.if_dynamic_opacity = None # Boolean. This variable is set to control if we want to update opacity for the previous layers. True in LapisGS;
+        self.if_dynamic_lapis = None # Boolean. This variable is set to control if we want to use the training strategy of "Dynamic 3D Gaussians: Tracking by Persistent Dynamic View Synthesis".
 
     def capture(self):
         return (
@@ -328,7 +329,14 @@ class GaussianModel:
                     if param.grad is not None:
                         param.grad[:size_fixedGS] = 0
                         param[:size_fixedGS].requires_grad_(False)
-
+    
+    def freeze_optimize(self):
+        for group in self.optimizer.param_groups:
+            if group["name"] not in self.trainable_attributes:
+                for param in group["params"]:
+                    if param.grad is not None:
+                        param.grad[:] = 0
+                        param[:].requires_grad_(False)
 
     def replace_tensor_to_optimizer(self, tensor, name):
         optimizable_tensors = {}

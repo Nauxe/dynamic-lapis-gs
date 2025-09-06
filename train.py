@@ -31,7 +31,7 @@ except ImportError:
 
 
 
-def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, debug_from, foundation_gs_path=None, dynamic_opacity=False):
+def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, debug_from, foundation_gs_path=None, dynamic_opacity=False, dynamic_lapis=False, initial_gs_path=None):
     first_iter = 0
     tb_writer = prepare_output_and_logger(dataset)
     gaussians = GaussianModel(dataset.sh_degree)
@@ -68,6 +68,16 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             gaussians.trainable_attributes = ["opacity"] # set the attribute name which needs to be updated
         else:
             gaussians.trainable_attributes = []
+    
+    if initial_gs_path: # load the initial gaussians for Dynamic-LapisGS, settings for D-LapisGS
+        gaussians.load_ply(initial_gs_path)
+        gaussians.training_setup(opt)
+        if dynamic_lapis:
+            gaussians.if_dynamic_lapis = True
+            gaussians.trainable_attributes = ["xyz", "rotation"] # set the attribute name which needs to be updated
+        else:
+            gaussians.trainable_attributes = []
+
          
 
     for iteration in range(first_iter, opt.iterations + 1):        
@@ -153,6 +163,8 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             if iteration < opt.iterations:
                 if gaussians.size_fixedGS: # settings for LapisGS: freeze the gaussians from previous layer
                     gaussians.freeze_fixedGS()
+                if initial_gs_path: # settings for Dynamic-LapisGS: only update the position and rotation of gaussians
+                    gaussians.freeze_optimize()
                 gaussians.optimizer.step()
                 gaussians.optimizer.zero_grad(set_to_none = True)
 
@@ -266,6 +278,8 @@ if __name__ == "__main__":
     parser.add_argument("--start_checkpoint", type=str, default = None)
     parser.add_argument("--foundation_gs_path", type=str, default = None)
     parser.add_argument("--dynamic_opacity", action="store_true")
+    parser.add_argument("--dynamic_lapis", action="store_true")
+    parser.add_argument('--initial_gs_path', type=str, default = None)
     args = parser.parse_args(sys.argv[1:])
     args.save_iterations.append(args.iterations)
     
@@ -277,7 +291,7 @@ if __name__ == "__main__":
     # Start GUI server, configure and run training
     network_gui.init(args.ip, args.port)
     torch.autograd.set_detect_anomaly(args.detect_anomaly)
-    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from, args.foundation_gs_path, args.dynamic_opacity)
+    training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from, args.foundation_gs_path, args.dynamic_opacity, args.dynamic_lapis, args.initial_gs_path)
 
     # All done
     print("\nTraining complete.")
