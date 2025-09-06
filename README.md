@@ -2,27 +2,29 @@
 
 The extension of LapisGS to Dynamic 3DGS. 
 
-The Dynamic-LapisGS serves as the foundation of our dynamic 3DGS streaming system, "LTS: A DASH Streaming System for Dynamic Multi-Layer 3D Gaussian Splatting Scenes", which won the **Best Paper Award** at MMSys'25 in April. See the [paper](https://drive.google.com/file/d/1iDz1ExOd1LrPhA7fv4DbLUbzn-Jioihn/view?usp=share_link). 
+The Dynamic-LapisGS serves as the foundation of our dynamic 3DGS streaming system, "LTS: A DASH Streaming System for Dynamic Multi-Layer 3D Gaussian Splatting Scenes", which won the 🏆**Best Paper Award**🏆 at ACM MMSys'25 in April. See the [paper](https://drive.google.com/file/d/1iDz1ExOd1LrPhA7fv4DbLUbzn-Jioihn/view?usp=share_link). 
 
-As for the code of LTS system, however, we have received notice from a company asserting that portions of our work may overlap with their patents related to viewport-dependent streaming. Because of this potential legal issue, **we cannot make the code or scripts openly available at this moment**. 
+As for the code of LTS system, however, we have received notice from a company asserting that portions of our work may overlap with their patents related to viewport-dependent streaming. We are currently addressing this issue. At this moment, **we cannot make the system code or scripts openly available**. 
 
-We apologize for any inconvenience this may cause and appreciate your understanding. We remain open to technical discussions and are willing to provide clarifications regarding the implementation through academic or professional exchange.
+We apologize for any inconvenience this may cause and appreciate your understanding. We remain actively open to technical discussions and are strongly willing to provide clarifications regarding the implementation through academic or professional exchange.
 
 Luckily, the core code for Dynamic-LapisGS is still available. You can use it to train and render your own dynamic 3DGS models.
 
-# Setup
+## Setup
 
 The code is built on the codebase of [LapisGS](https://github.com/nus-vv-streams/lapis-gs?tab=readme-ov-file), which essentially only modifies a few lines of code to support dynamic 3DGS. Please refer to the LapisGS repository for detailed requirements and elaboration.
 
-# Pre-processing
+## Pre-processing
 
-## Dataset Preparation
+To be released soon.
+
+### Dataset Preparation
 
 
-## Dataset Structure
+### Dataset Structure
 
 
-# Running
+## Running
 
 ```bash
 python train_full_pipeline.py --model_base <path to the output model root directory> --dataset_base <path to the source root directory> --dataset_name <name of the dataset> --scene <name of the scene> --method <name of the method>  --frame_list <two numbers separated by space, indicating the start and end frame index, e.g., 0 30>
@@ -78,7 +80,7 @@ project
 ```
 
 
-## Evaluation
+### Evaluation
 
 We use the following command to evaluate the model:
 ```bash
@@ -86,7 +88,7 @@ python render.py -m <path to trained model> # Generate renderings
 python metrics.py -m <path to trained model> # Compute error metrics on renderings
 ```
 
-# Citation
+## Citation
 
 If you find our code or paper useful, please cite:
 
