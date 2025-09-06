@@ -51,6 +51,7 @@ if __name__ == "__main__":
         for idx, resolution in enumerate(resolution_scales):
             if not (os.path.isfile(f"{model_base}/{dataset_name}/{scene}/{method}/{scene}_res{resolution}/{first_frame:04}/point_cloud/iteration_30000/point_cloud.ply")): # TEMPORARY, skip the training if the model already exists
 
+
                 print(f"Training model for {scene} frame {first_frame:04} at resolution {resolution}")
 
                 model_dir = os.path.join(model_base, dataset_name, scene, method, f"{scene}_res{resolution}", f"{first_frame:04}")
@@ -68,7 +69,8 @@ if __name__ == "__main__":
         # 2. train the subsequent frames based on the previous frame, no densification, only update the position and rotation
         for frame in subsequent_frames:
             for idx, resolution in enumerate(resolution_scales):
-                if not (os.path.isfile(f"{model_base}/{dataset_name}/{scene}/{method}/{scene}_res{resolution}/dynamic_{frame:04}/point_cloud/iteration_30000/point_cloud.ply")): # TEMPORARY, skip the training if the model already exists
+                # if not (os.path.isfile(f"{model_base}/{dataset_name}/{scene}/{method}/{scene}_res{resolution}/dynamic_{frame:04}/point_cloud/iteration_30000/point_cloud.ply")): # TEMPORARY, skip the training if the model already exists
+                if True:
 
                     print(f"Training model for {scene} frame {frame:04} at resolution {resolution}")
                     
@@ -85,7 +87,7 @@ if __name__ == "__main__":
                     # disable densification and opacity reset by:
                     # 1. setting --densify_from_iter and --opacity_reset_interval larger than number of iterations, 
                     # 2. setting --densify_until_iter to 0
-                    train_command = f"python {train_bin} -s {source_dir} -m {model_dir} --data_device cuda --lambda_dssim {lambda_dssim}  --iterations {iterations} --densify_from_iter {iterations+1} --densify_until_iter 0 --opacity_reset_interval {iterations+1}  --initial_gs_path {previous_gs_path}"
+                    train_command = f"python {train_bin} -s {source_dir} -m {model_dir} --data_device cuda --lambda_dssim {lambda_dssim}  --iterations {iterations} --densify_from_iter {iterations+1} --densify_until_iter 0 --opacity_reset_interval {iterations+1}  --dynamic_lapis --initial_gs_path {previous_gs_path}"
 
 
                     # run the command lines
