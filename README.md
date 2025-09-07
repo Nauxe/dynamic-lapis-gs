@@ -3,42 +3,9 @@
 The extension of LapisGS to Dynamic 3DGS. 
 
 <!-- show four videos in a table with 4 columns, and captions (scaling factor from 1 to 8) for each video -->
-<table>
-  <tr>
-    <td align="center">
-      <video width="200" height="150" controls>
-        <source src="assets/longdress_res1.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <br>
-      <strong>Scaling Factor: 1</strong>
-    </td>
-    <td align="center">
-      <video width="200" height="150" controls>
-        <source src="assets/longdress_res2.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <br>
-      <strong>Scaling Factor: 2</strong>
-    </td>
-    <td align="center">
-      <video width="200" height="150" controls>
-        <source src="assets/longdress_res4.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <br>
-      <strong>Scaling Factor: 4</strong>
-    </td>
-    <td align="center">
-      <video width="200" height="150" controls>
-        <source src="assets/longdress_res8.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <br>
-      <strong>Scaling Factor: 8</strong>
-    </td>
-  </tr>
-</table>
+| [![Scaling Factor: 1](assets/longdress_res1.png)](assets/longdress_res1.mp4) | [![Scaling Factor: 2](assets/longdress_res2.png)](assets/longdress_res2.mp4) | [![Scaling Factor: 4](assets/longdress_res4.png)](assets/longdress_res4.mp4) | [![Scaling Factor: 8](assets/longdress_res8.png)](assets/longdress_res8.mp4) |
+|:---:|:---:|:---:|:---:|
+| **Scaling Factor: 1** <br> [Download MP4](assets/longdress_res1.mp4) | **Scaling Factor: 2** <br> [Download MP4](assets/longdress_res2.mp4) | **Scaling Factor: 4** <br> [Download MP4](assets/longdress_res4.mp4) | **Scaling Factor: 8** <br> [Download MP4](assets/longdress_res8.mp4) |
 
 
 ## Background
