@@ -38,6 +38,7 @@ The extension of LapisGS to Dynamic 3DGS.
       <strong>Scaling Factor: 8</strong>
     </td>
   </tr>
+</table>
 
 
 ## Background
