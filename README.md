@@ -2,25 +2,65 @@
 
 The extension of LapisGS to Dynamic 3DGS. 
 
+<!-- show four videos in a table with 4 columns, and captions (scaling factor from 1 to 8) for each video -->
+<table>
+  <tr>
+    <td align="center">
+      <video width="200" height="150" controls>
+        <source src="assets/longdress_res1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <br>
+      <strong>Scaling Factor: 1</strong>
+    </td>
+    <td align="center">
+      <video width="200" height="150" controls>
+        <source src="assets/longdress_res2.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <br>
+      <strong>Scaling Factor: 2</strong>
+    </td>
+    <td align="center">
+      <video width="200" height="150" controls>
+        <source src="assets/longdress_res4.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <br>
+      <strong>Scaling Factor: 4</strong>
+    </td>
+    <td align="center">
+      <video width="200" height="150" controls>
+        <source src="assets/longdress_res8.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <br>
+      <strong>Scaling Factor: 8</strong>
+    </td>
+  </tr>
+
+
 ## Background
 
 The Dynamic-LapisGS serves as the foundation of our dynamic 3DGS streaming system, "LTS: A DASH Streaming System for Dynamic Multi-Layer 3D Gaussian Splatting Scenes", which won the 🏆**Best Paper Award**🏆 at ACM MMSys'25 in April. See the [paper](https://drive.google.com/file/d/1iDz1ExOd1LrPhA7fv4DbLUbzn-Jioihn/view?usp=share_link). 
 
-### Overview
+### Idea Overview
 
 D-LapisGS builds upon [LapisGS](https://yuang-ian.github.io/lapisgs/) and [Dynamic-3DG](https://dynamic3dgaussians.github.io). The training consists of two main components: multi-resolution training and temporal coherence maintenance:
-1. Like LapisGS, D-LapisGS initially trains a low-resolution base layer, followed by successive enhancement layers utilizing higher-resolution datasets. This training only performs on the first frame of the dynamic sequence.
-2. For the subsequent frames, to maintain temporal coherence, D-LapisGS treats Gaussians as particles governed by physical constraints, including local rigidity, rotational similarity, and long-term local isometry. That is: 
+1. **For the first frame** of the dynamic sequence: like LapisGS, D-LapisGS initially trains a low-resolution base layer, followed by successive enhancement layers utilizing higher-resolution datasets.
+2. **For the subsequent frames**: to maintain temporal coherence, D-LapisGS treats Gaussians as particles governed by physical constraints, including local rigidity, rotational similarity, and long-term local isometry. That is:
    1. For each subsequent frames, we don't explicitly train a LapisGS from scratch. Instead, the Gaussians of base layer and enhancement layers are inherited from the previous frame.
    2. They are optimized only on the rotation and position parameters, while keeping the other parameters (e.g., color, scaling) fixed.
 
+
+
 ### LTS System Code Availability
 
-As for the code of LTS system, however, we have received notice from a company asserting that portions of our work may overlap with their patents related to viewport-dependent streaming. We are currently addressing this issue. At this moment, **we CANNOT make the system code or scripts openly available**. We apologize for any inconvenience this may cause and appreciate your understanding. 
+As for the code of LTS system, however, we have received notice from a company asserting that portions of our work may overlap with their patents related to viewport-dependent streaming. We are currently addressing this issue. At this moment, **we CANNOT make the system code or scripts openly available**. We apologize for any inconvenience that may cause and appreciate your understanding. 
 
 Nevertheless, **we firmly believe in the importance of open research and collaboration,** and we remain actively open to technical discussions and are strongly willing to provide clarifications regarding the implementation through academic or professional exchange.
 
-Luckily, the core code for Dynamic-LapisGS is still available. You can use it to train and render your own dynamic 3DGS models.
+Luckily, the core code for Dynamic-LapisGS is still available. You can use it to train and render your own dynamic 3DGS models. See below 👇!
 
 
 ## Setup
