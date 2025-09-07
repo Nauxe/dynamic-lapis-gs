@@ -2,11 +2,26 @@
 
 The extension of LapisGS to Dynamic 3DGS. 
 
-<!-- show four videos in a table with 4 columns, and captions (scaling factor from 1 to 8) for each video -->
-| [![Scaling Factor: 1](assets/longdress_res1.png)](assets/longdress_res1.mp4) | [![Scaling Factor: 2](assets/longdress_res2.png)](assets/longdress_res2.mp4) | [![Scaling Factor: 4](assets/longdress_res4.png)](assets/longdress_res4.mp4) | [![Scaling Factor: 8](assets/longdress_res8.png)](assets/longdress_res8.mp4) |
-|:---:|:---:|:---:|:---:|
-| **Scaling Factor: 1** <br> [Download MP4](assets/longdress_res1.mp4) | **Scaling Factor: 2** <br> [Download MP4](assets/longdress_res2.mp4) | **Scaling Factor: 4** <br> [Download MP4](assets/longdress_res4.mp4) | **Scaling Factor: 8** <br> [Download MP4](assets/longdress_res8.mp4) |
-
+<table>
+  <tr>
+    <td align="center">
+      <img src="assets/longdress_res1.gif" width="240" alt="Scaling x1"><br>
+      <sub>Scaling ×1</sub>
+    </td>
+    <td align="center">
+      <img src="assets/longdress_res2.gif" width="240" alt="Scaling x2"><br>
+      <sub>Scaling ×2</sub>
+    </td>
+    <td align="center">
+      <img src="assets/longdress_res4.gif" width="240" alt="Scaling x4"><br>
+      <sub>Scaling ×4</sub>
+    </td>
+    <td align="center">
+      <img src="assets/longdress_res8.gif" width="240" alt="Scaling x8"><br>
+      <sub>Scaling ×8</sub>
+    </td>
+  </tr>
+</table>
 
 ## Background
 
