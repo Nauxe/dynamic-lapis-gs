@@ -2,22 +2,24 @@
 
 The extension of LapisGS to Dynamic 3DGS. 
 
+The rendering results of the dynamic scene *longdress* from 8i dataset with different resolutions are shown below.
+
 <table>
   <tr>
     <td align="center">
-      <img src="assets/longdress_res1.gif" width="240" alt="Scaling x1"><br>
+      <img src="assets/longdress_res1.gif" width="200" alt="Scaling x1"><br>
       <sub>Scaling ×1</sub>
     </td>
     <td align="center">
-      <img src="assets/longdress_res2.gif" width="240" alt="Scaling x2"><br>
+      <img src="assets/longdress_res2.gif" width="200" alt="Scaling x2"><br>
       <sub>Scaling ×2</sub>
     </td>
     <td align="center">
-      <img src="assets/longdress_res4.gif" width="240" alt="Scaling x4"><br>
+      <img src="assets/longdress_res4.gif" width="200" alt="Scaling x4"><br>
       <sub>Scaling ×4</sub>
     </td>
     <td align="center">
-      <img src="assets/longdress_res8.gif" width="240" alt="Scaling x8"><br>
+      <img src="assets/longdress_res8.gif" width="200" alt="Scaling x8"><br>
       <sub>Scaling ×8</sub>
     </td>
   </tr>
