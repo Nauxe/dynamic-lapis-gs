@@ -16,12 +16,84 @@ The code is built on the codebase of [LapisGS](https://github.com/nus-vv-streams
 
 ## Pre-processing
 
-To be released soon.
 
 ### Dataset Preparation
 
+The first step is to generate the multi-resolution dynamic data for the training part. 
+
+In our paper, we generate multi-resolution data by rendering the original point cloud data from [8i dataset](https://plenodb.jpeg.org/pc/8ilabs) with different image resolutions. Specifically, we downsample the original data by factors of 2×, 4×, and 8×, to have 4 levels of resolution. 
+
+We provide a script to generate multi-resolution data for 2 dynamic scenes from 8i dataset we used in the paper: Long Dress and Soldier, where 
+1. For each dynamic scene, we generate image dataset for 30 frames (the number of frames can be set with the `--total_frame_num` argument, 30 by default). 
+2. For each frame, we generate 100 random views for training and another 200 random views for testing with the same camera settings of [NeRF](https://www.matthewtancik.com/nerf). To save your time, the camera setting files are attached, i.e., `transforms_train.json` and `transforms_test.json`.
+
+You can run the script with the following command:
+
+```bash
+python dataset_prepare.py --ptcl_root <Path to the root directory of point clouds> --output_root <path to the output dataset root directory> --total_frame_num <number of frames to process for each model, 30 by default> --dataset_name <name of the dataset, 8i by default> 
+```
+
 
 ### Dataset Structure
+
+For example, we can generate the dataset hierarchy of dataset 8i with the following command:
+
+```bash
+python dataset_prepare.py --ptcl_root ./raw_dataset/8iVFBv2 --output_root ./source --total_frame_num 30 --dataset_name 8i
+```
+
+You should have the following file structure for the model training:
+
+```
+project
+└── raw_dataset # source_base
+    ├── 8iVFBv2 # dataset_name
+    │   └── longdress # dynamic scene
+    │       └── Ply
+    │           ├── longdress_vox10_1051.ply
+    │           ├── longdress_vox10_1052.ply
+    │           └── ...
+    │   └── soldier # dynamic scene
+    │       └── Ply
+    │           ├── soldier_vox10_0536.ply
+    │           ├── soldier_vox10_0537.ply
+    │           └── ...
+└── source # output_base
+    ├── 8i # dataset_name
+    │   └── longdress # scene
+    │       └── longdress_res1
+    │           ├── 1051
+    │               ├── train
+    │               ├── test
+    │               ├── transforms_test.json
+    │               └── transforms_train.json
+    │           ├── 1052
+    │           ...
+    │       └── longdress_res2
+    │           ├── 1051
+    │               ├── train
+    │               ├── test
+    │               ├── transforms_test.json
+    │               └── transforms_train.json
+    │           ├── 1052
+    │           ...
+    │       └── longdress_res4
+    │           ├── 1051
+    │               ├── train
+    │               ├── test
+    │               ├── transforms_test.json
+    │               └── transforms_train.json
+    │           ├── 1052
+    │           ...
+    │       └── longdress_res8
+    │           ├── 1051
+    │               ├── train
+    │               ├── test
+    │               ├── transforms_test.json
+    │               └── transforms_train.json
+    │           ├── 1052
+    │           ...
+```
 
 
 ## Running

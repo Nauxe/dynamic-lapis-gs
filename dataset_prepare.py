@@ -1,113 +1,173 @@
+import itertools
 import os
-import sys
+import json
+import math
+from pathlib import Path
+import numpy as np
+import open3d as o3d
 from PIL import Image
+import open3d.visualization.rendering as rendering
 from argparse import ArgumentParser
 
 
+def read_poses(pose_json_path):
+    with open(pose_json_path, 'r') as fp:
+        meta = json.load(fp)
 
-def downsample_image(raw_dataset_path, image_path, ds_factor):
-    im = Image.open(os.path.join(raw_dataset_path, image_path)) 
-    orig_width, orig_height = im.size 
-    new_size = round(orig_width/(ds_factor)), round(orig_height/(ds_factor))
-    im1 = im.resize(new_size)
+    camera_field = meta['camera_angle_x']
+    poses = [np.array(frame['transform_matrix']) for frame in meta['frames'][::1]]
+    poses = np.array(poses).astype(np.float32)
+    return camera_field, poses
+
+def extract_eye_up_from_camera_matrix(camera_matrix):
+    R = camera_matrix[:3, :3]
+    T = camera_matrix[:3, 3]
+    eye = T
+    up = R[:, 1]
+    z = R[:, 2]
+    return eye, up, z
+
+def save_image(out_root, render):
+    img = render.render_to_image()
+    os.makedirs(os.path.dirname(out_root), exist_ok=True)
+    o3d.io.write_image(out_root, img, 9)  # save images with black background
+    image = Image.open(out_root)  # reload images
+    image = image.convert('RGBA')
+    data = image.getdata()
+    new_data = []
+    for item in data:
+        if item[:3] == (0, 0, 0):
+            new_data.append((0, 0, 0, 0))
+        else:
+            new_data.append(item)
+    image.putdata(new_data)
+    image.save(out_root, 'PNG')
+    return 0
+
+# pc_path, render_dir, pose_json_dict[pose_type]
+def render_2d_image(pc_path, render_dir, pose_json_path, pt_size=1, width=600, height=600, testskip=1):  # 2.2 1400*1400
+    point_cloud = o3d.io.read_point_cloud(pc_path)
+    point_cloud = point_cloud.voxel_down_sample(voxel_size=1.7)
+
+    camera_point_to = point_cloud.get_axis_aligned_bounding_box().get_center()   # [281, 510, 170]
     
-    return im1
+    
+    points = np.asarray(point_cloud.points) - camera_point_to
+    if "thaidancer" in pc_path:
+        points /= 960.0 
+    else: 
+        points /= 480.0  # r~=4
+    points -= (0, 0.1, 0)
+    rotation_matrix = np.array([[1, 0, 0],
+                                [0, 0, -1],
+                                [0, 1, 0]])
+    points = np.dot(points, rotation_matrix.T)
+    point_cloud.points = o3d.utility.Vector3dVector(points)  # resize
+
+    
+    material = rendering.MaterialRecord()
+    material.shader = "defaultUnlit"
+    material.point_size = pt_size
+
+    # initialize `render`
+    render = rendering.OffscreenRenderer(width, height, headless=False)
+    # set render parameter
+    # render.scene.set_background(np.array([1.0, 1.0, 1.0, 1.0])) # set the background to be white
+    render.scene.set_background(np.array([0.0, 0.0, 0.0, 0.0])) # set the background to be transparent
+    render.scene.add_geometry("pcd", point_cloud, material)
+    render.scene.view.set_post_processing(False)
+
+    camera_angle_x, ex_matrix = read_poses(pose_json_path)
+    for idx, mat in enumerate(ex_matrix[::testskip]):
+        # if idx % 50 == 0:
+            # print('dataset' + data_root + ': ' + split + str(idx))
+        output_filename = os.path.join(render_dir, f"r_{idx}.png")
+
+
+        cam_eye, cam_up, cam_z = extract_eye_up_from_camera_matrix(mat)
+        cam_center = cam_eye - cam_z # cam_z is the camera distance
+        field_view = camera_angle_x * 180 / math.pi
+        render.setup_camera(field_view,  # or 60?
+                            cam_center,
+                            cam_eye,
+                            cam_up)
+        # print(cam_center, cam_eye, np.linalg.norm(cam_z), point_cloud.get_axis_aligned_bounding_box().get_center())
+
+        # capture the screenshot
+        save_image(output_filename, render)
+
+    del render, material
+
+
+def rescale_image(image_path, resolution_scale=1):
+    image = Image.open(image_path)
+    width, height = image.size
+
+    newsize = round(width/(resolution_scale)), round(height/(resolution_scale))
+
+    return image.resize(newsize, Image.LANCZOS)
+
 
 
 if __name__ == "__main__":
-
     # Set up command line argument parser
-    parser = ArgumentParser(description="Training script parameters")
-    parser.add_argument('--source_base', type=str, required=True, help="Path to the source dataset root directory")
-    parser.add_argument('--dataset_name', type=str, required=True, help="Name of the dataset")
-    parser.add_argument('--output_base', type=str, required=True, help="Path to the output root directory")
-    args = parser.parse_args(sys.argv[1:])
-    
-    
-    dataset_base = args.source_base
+
+    parser = ArgumentParser(description="Render 2D images from point clouds")
+    parser.add_argument("--ptcl_root", type=str, required=True, help="Path to the root directory of point clouds")
+    parser.add_argument("--output_root", type=str, required=True, help="Path to the output root directory")
+    parser.add_argument("--dataset_name", type=str, default="8i", help="Name of the dataset")
+    parser.add_argument("--total_frame_num", type=int, default=30, help="Number of frames to process for each model")
+
+    args = parser.parse_args()
+
+    ptcl_root = args.ptcl_root
+    output_root = args.output_root
     dataset_name = args.dataset_name
-    output_base = args.output_base
-    ds_factors = [1, 2, 4, 8] # Downsampling factors: 1 means original size, 2 means half size, 4 means quarter size, 8 means eighth size
-    dataset_scene_map = {"db": ["playroom","drjohnson"], 
-                         "tandt": ["train", "truck"], 
-                         "nerf_synthetic": ["lego", "chair", "drums", "ficus", "hotdog", "materials", "mic", "ship",],
-                         "360": ["bonsai", "counter", "flowers", "garden", "kitchen", "room", "treehill"]}
+    total_frame_num = args.total_frame_num
+
+    model_list = ['longdress', 'soldier']
+
+    pose_json_dict = {"train": "transforms_train.json",
+                    "test":  "transforms_test.json",
+                    }
     
-    if dataset_name == "db" or dataset_name == "tandt":
-        for scene in dataset_scene_map[dataset_name]:
-            dataset_root = os.path.join(dataset_base, dataset_name)
-            raw_dataset_path = os.path.join(dataset_root, scene, "images")
+    
+    resolution_scales = [1, 2, 4, 8]
 
-            for ds_factor in ds_factors:
-                print(f"Processing resolution 1/{ds_factor} for {dataset_name} {scene}")
-                
-                output_dir = os.path.join(output_base, dataset_name, scene, f"{scene}_res{ds_factor}", "images")
-                os.makedirs(output_dir, exist_ok=True)
-                
-                # downsample the images
-                for image_path in os.listdir(raw_dataset_path):
-                    if image_path.endswith("jpg") and not image_path.startswith("."):
-                        ds_image = downsample_image(raw_dataset_path, image_path, ds_factor)
-                        ds_image.save(os.path.join(output_dir, image_path))
+    pt_size, width, height = 2, 1024, 1024
 
-                # copy the folder sparse to the new folder
-                sparse_path = os.path.join(dataset_root, scene, "sparse")
-                output_sparse_path = os.path.join(output_base, dataset_name, scene, f"{scene}_res{ds_factor}")
-                os.system(f"cp -r {sparse_path} {output_sparse_path}")
-    elif dataset_name == "360":
-        for scene in dataset_scene_map[dataset_name]:
-            dataset_root = os.path.join(dataset_base, dataset_name)
-            raw_dataset_path = os.path.join(dataset_root, scene, "images")
+    total_frame_count = total_frame_num
 
-            for ds_factor in ds_factors:
-                print(f"Processing resolution 1/{ds_factor} for {dataset_name} {scene}")
-                
-                output_dir = os.path.join(output_base, dataset_name, scene, f"{scene}_res{ds_factor}", "images")
-                os.makedirs(output_dir, exist_ok=True)
-                
-                # downsample the images
-                if ds_factor == 1:
-                    for image_path in os.listdir(raw_dataset_path):
-                        if image_path.endswith("JPG") and not image_path.startswith("."):
-                            im = Image.open(os.path.join(raw_dataset_path, image_path)) 
-                            orig_width, orig_height = im.size 
-                            # downsample the image to 1600 pixel-width, following the original 3DGS settings.
-                            ds_image = downsample_image(raw_dataset_path, image_path, float(orig_width/1600))
-                            ds_image.save(os.path.join(output_dir, image_path))
-                else:
-                    res1_dataset_path = os.path.join(output_base, dataset_name, scene, f"{scene}_res1", "images")
-                    for image_path in os.listdir(res1_dataset_path):
-                        if image_path.endswith("JPG") and not image_path.startswith("."):
-                            ds_image = downsample_image(res1_dataset_path, image_path, ds_factor)
-                            ds_image.save(os.path.join(output_dir, image_path))
+    for res, model in itertools.product(resolution_scales, model_list):
+        for pose_type in ["train", "test"]:
 
-                # copy the folder sparse to the new folder
-                sparse_path = os.path.join(dataset_root, scene, "sparse")
-                output_sparse_path = os.path.join(output_base, dataset_name, scene, f"{scene}_res{ds_factor}")
-                os.system(f"cp -r {sparse_path} {output_sparse_path}")
-    elif dataset_name == "nerf_synthetic":
-        splits = ["train","test"]
-        for scene in dataset_scene_map[dataset_name]:
-            for ds_factor in ds_factors:
-                print(f"Processing resolution 1/{ds_factor} for {dataset_name} {scene}")
-                
-                for split in splits:
-                    dataset_root = os.path.join(dataset_base, dataset_name)
-                    raw_dataset_path = os.path.join(dataset_root, scene, split)
-                    json_transforms_path = os.path.join(dataset_root, scene, f"transforms_{split}.json")
-                    
-                    output_dir = os.path.join(output_base, dataset_name, scene, f"{scene}_res{ds_factor}", split)
-                    os.makedirs(output_dir, exist_ok=True)
-                    
-                    # downsample the images
-                    for image_path in os.listdir(raw_dataset_path):
-                        if image_path.endswith("png") and not image_path.startswith("."):
-                            ds_image = downsample_image(raw_dataset_path, image_path, ds_factor)
-                            ds_image.save(os.path.join(output_dir, image_path))
+            ptcl_dir = os.path.join(ptcl_root, model, 'Ply')
+            frame_count = 0
+            
+            # iterate the ptcl_dir for each file with .ply extension
+            for file_name in sorted(os.listdir(ptcl_dir)):
+                # only process the .ply files and not start with .
+                if file_name.endswith(".ply") and not file_name.startswith("."):
+                    frame_count += 1
+                    pc_path = os.path.join(ptcl_dir, file_name)
+                    frame_no = file_name.split('_')[-1].split('.')[0][-4:] # split by _ and capture the digits of the last part
 
-                    # copy the transform_matrix to the new folder
-                    output_json_transforms_path = os.path.join(output_base, dataset_name, scene, f"{scene}_res{ds_factor}")
-                    os.system(f"cp -r {json_transforms_path} {output_json_transforms_path}")
-    else:
-        print("Dataset name not recognized. Please check the dataset_name argument.")
-        sys.exit(1)
+                    if frame_count <= total_frame_count:
+                        render_dir = os.path.join(output_root, dataset_name, model, f"{model}_res{res}", frame_no, pose_type)
+                        os.makedirs(render_dir, exist_ok=True) # make the directory if not exist
+                        print(f"Rendering {file_name} with resolution {res}, pose type: {pose_type}")
+                        
+                        if res == 1: # no need to downscale the images
+                            render_2d_image(pc_path, render_dir, pose_json_dict[pose_type], pt_size=pt_size, width=width, height=height)
+                        else: # downscale the images by a factor of res
+                            original_render_dir = os.path.join(output_root, dataset_name, model, f"{model}_res1", frame_no, pose_type)
+                            # rescale the images
+                            for image_name in os.listdir(original_render_dir):
+                                if image_name.endswith(".png") and not image_name.startswith("."):
+                                    image_path = os.path.join(original_render_dir, image_name)
+                                    new_image = rescale_image(image_path, res)
+                                    new_image.save(os.path.join(render_dir, image_name))
+
+
+                        # move the pose_json_dict[pose_type] to the parent dir of render_dir
+                        os.system(f"cp {pose_json_dict[pose_type]} {str(Path(render_dir).parent)}")
