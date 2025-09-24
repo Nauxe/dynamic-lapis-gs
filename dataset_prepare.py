@@ -70,7 +70,7 @@ def render_2d_image(pc_path, render_dir, pose_json_path, pt_size=1, width=600, h
     material.point_size = pt_size
 
     # initialize `render`
-    render = rendering.OffscreenRenderer(width, height, headless=False)
+    render = rendering.OffscreenRenderer(width, height) 
     # set render parameter
     # render.scene.set_background(np.array([1.0, 1.0, 1.0, 1.0])) # set the background to be white
     render.scene.set_background(np.array([0.0, 0.0, 0.0, 0.0])) # set the background to be transparent
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     dataset_name = args.dataset_name
     total_frame_num = args.total_frame_num
 
-    model_list = ['longdress', 'soldier']
+    model_list = next(os.walk(ptcl_root))[1] # Get all child directories of ptcl_root as models
 
     pose_json_dict = {"train": "transforms_train.json",
                     "test":  "transforms_test.json",
